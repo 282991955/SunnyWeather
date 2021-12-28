@@ -30,24 +30,30 @@ class PlaceFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        // 给RecycleView设置布局管理器和适配器
         val linearLayoutManager = LinearLayoutManager(activity)
         binding.recycleView.layoutManager = linearLayoutManager
         adapter = PlaceAdapter(this, viewModel.placeList)
         binding.recycleView.adapter = adapter
+        // 给搜索框设置文字改变的监听事件
         binding.searchPlaceEdit.addTextChangedListener {
             val content = it.toString()
             if (content.isNotEmpty()) {
+                // 如果文本不为空就改变ViewModel中的searchLiveData
                 viewModel.searchPlace(content)
             } else {
+                // 如果文本为空隐藏结果列表，显示背景图片，清空placeList且动态刷新RecycleView
                 binding.recycleView.visibility = View.GONE
                 binding.bgImageView.visibility = View.VISIBLE
                 viewModel.placeList.clear()
                 adapter.notifyDataSetChanged()
             }
         }
+        // 监听placeLiveData，每次改变都动态获取最新数据
         viewModel.placeLiveData.observe(this) {
             val places = it.getOrNull()
             if (places != null) {
+                // 若获取的数据不为空显示结果列表隐藏背景图，动态刷新列表
                 binding.recycleView.visibility = View.VISIBLE
                 binding.bgImageView.visibility = View.GONE
                 viewModel.placeList.clear()

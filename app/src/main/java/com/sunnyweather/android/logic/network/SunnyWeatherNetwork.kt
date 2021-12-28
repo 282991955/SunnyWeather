@@ -7,6 +7,9 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
+/**
+ * 封装网络请求
+ */
 object SunnyWeatherNetwork {
 
     private val placeService = ServiceCreator.create<PlaceService>()
