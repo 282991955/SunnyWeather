@@ -1,5 +1,6 @@
 package com.sunnyweather.android
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 
