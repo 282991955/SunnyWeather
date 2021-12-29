@@ -1,13 +1,18 @@
 package com.sunnyweather.android
 
+import android.content.Context
 import android.graphics.Color
+import android.inputmethodservice.InputMethodService
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import com.sunnyweather.android.databinding.ActivityWeatherBinding
 import com.sunnyweather.android.logic.model.Weather
@@ -20,7 +25,7 @@ class WeatherActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityWeatherBinding
 
-    private val viewModel by lazy {
+    val viewModel by lazy {
         ViewModelProvider(this).get(WeatherViewModel::class.java)
     }
 
@@ -31,6 +36,30 @@ class WeatherActivity : AppCompatActivity() {
         decoView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         window.statusBarColor = Color.TRANSPARENT
         setContentView(binding.root)
+
+        binding.now.navBtn.setOnClickListener {
+            binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener{
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onDrawerOpened(drawerView: View) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onDrawerClosed(drawerView: View) {
+                val manager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                manager.hideSoftInputFromWindow(drawerView.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+            }
+
+            override fun onDrawerStateChanged(newState: Int) {
+                TODO("Not yet implemented")
+            }
+        })
+
         if (viewModel.locationLng.isEmpty()) {
             viewModel.locationLng = intent.getStringExtra("location_lng") ?: ""
         }
@@ -48,23 +77,31 @@ class WeatherActivity : AppCompatActivity() {
                 Toast.makeText(this, "无法成功获取天气信息", Toast.LENGTH_SHORT).show()
                 it.exceptionOrNull()?.printStackTrace()
             }
+            binding.swipeRefresh.isRefreshing = false
         }
-        viewModel.refreshWeather(viewModel.locationLng, viewModel.locationLat)
+        binding.swipeRefresh.setColorSchemeResources(R.color.design_default_color_secondary)
+        refreshWeather()
+        binding.swipeRefresh.setOnRefreshListener {
+            refreshWeather()
+        }
     }
 
+    // 将查询来的天气数据设置到不同的view上
     private fun showWeatherInfo(weather: Weather) {
         val now = binding.now
         val forecast = binding.forecast
-        now.placeName.text = viewModel.placeName
         val realtime = weather.realtime
         val daily = weather.daily
+
         // 填充now.xml布局中的数据
+        now.placeName.text = viewModel.placeName
         val currentTempText = "${realtime.temperature.toInt()} ℃"
         now.currentTemp.text = currentTempText
         now.currentSky.text = getSky(realtime.skycon).info
         val currentPM25Text = "空气指数 ${realtime.airQuality.aqi.chn.toInt()}"
         now.currentAQI.text = currentPM25Text
         now.nowLayout.setBackgroundResource(getSky(realtime.skycon).bg)
+
         // 填充forecast.xml布局中的数据
         forecast.forecastLayout.removeAllViews()
         val days = daily.skycon.size
@@ -85,6 +122,7 @@ class WeatherActivity : AppCompatActivity() {
             temperatureInfo.text = tempText
             forecast.forecastLayout.addView(view)
         }
+
         // 填充life_index.xml布局中的数据
         val life = binding.life
         val lifeIndex = daily.lifeIndex
@@ -93,5 +131,10 @@ class WeatherActivity : AppCompatActivity() {
         life.ultravioletText.text = lifeIndex.ultraviolet[0].desc
         life.carWashingText.text = lifeIndex.carWashing[0].desc
         binding.weatherLayout.visibility = View.VISIBLE
+    }
+
+    fun refreshWeather() {
+        viewModel.refreshWeather(viewModel.locationLng, viewModel.locationLat)
+        binding.swipeRefresh.isRefreshing = true
     }
 }
