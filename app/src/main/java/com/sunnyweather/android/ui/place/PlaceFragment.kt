@@ -1,6 +1,8 @@
 package com.sunnyweather.android.ui.place
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,11 +11,12 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.sunnyweather.android.WeatherActivity
 import com.sunnyweather.android.databinding.FragmentPlaceBinding
 
 class PlaceFragment : Fragment() {
 
-    private val viewModel by lazy {
+    val viewModel by lazy {
         ViewModelProvider(this).get(PlaceViewModel::class.java)
     }
 
@@ -30,6 +33,19 @@ class PlaceFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        // 如果sp里面有数据，则直接跳转到那边，并且关闭当前activity，结束执行
+        if (viewModel.isPlaceSaved()) {
+            val place = viewModel.getSavedPlace()
+            val intent = Intent(context, WeatherActivity::class.java).apply {
+                putExtra("location_lng",place.location.lng)
+                putExtra("location_lat",place.location.lat)
+                putExtra("place_name", place.name)
+            }
+            startActivity(intent)
+            activity?.finish()
+            return
+        }
+
         // 给RecycleView设置布局管理器和适配器
         val linearLayoutManager = LinearLayoutManager(activity)
         binding.recycleView.layoutManager = linearLayoutManager
