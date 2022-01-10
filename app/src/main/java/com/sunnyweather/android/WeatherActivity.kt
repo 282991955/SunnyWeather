@@ -1,19 +1,15 @@
 package com.sunnyweather.android
 
-import android.content.Context
 import android.graphics.Color
-import android.inputmethodservice.InputMethodService
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.inputmethod.InputMethodManager
+import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
+import com.sunnyweather.android.base.BaseActivity
 import com.sunnyweather.android.databinding.ActivityWeatherBinding
 import com.sunnyweather.android.logic.model.Weather
 import com.sunnyweather.android.logic.model.getSky
@@ -21,7 +17,7 @@ import com.sunnyweather.android.ui.weather.WeatherViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
-class WeatherActivity : AppCompatActivity() {
+class WeatherActivity : BaseActivity() {
 
     lateinit var binding: ActivityWeatherBinding
 
@@ -33,32 +29,14 @@ class WeatherActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityWeatherBinding.inflate(layoutInflater)
         val decoView = window.decorView
-        decoView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        decoView.systemUiVisibility =
+            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         window.statusBarColor = Color.TRANSPARENT
         setContentView(binding.root)
 
         binding.now.navBtn.setOnClickListener {
             binding.drawerLayout.openDrawer(GravityCompat.START)
         }
-
-        binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener{
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onDrawerOpened(drawerView: View) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onDrawerClosed(drawerView: View) {
-                val manager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                manager.hideSoftInputFromWindow(drawerView.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
-            }
-
-            override fun onDrawerStateChanged(newState: Int) {
-                TODO("Not yet implemented")
-            }
-        })
 
         if (viewModel.locationLng.isEmpty()) {
             viewModel.locationLng = intent.getStringExtra("location_lng") ?: ""
@@ -108,7 +86,8 @@ class WeatherActivity : AppCompatActivity() {
         for (i in 0 until days) {
             val skycon = daily.skycon[i]
             val temperature = daily.temperature[i]
-            val view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecast.forecastLayout, false)
+            val view = LayoutInflater.from(this)
+                .inflate(R.layout.forecast_item, forecast.forecastLayout, false)
             val dateInfo = view.findViewById<TextView>(R.id.dateInfo)
             val skyIcon = view.findViewById<ImageView>(R.id.skyIcon)
             val skyInfo = view.findViewById<TextView>(R.id.skyInfo)

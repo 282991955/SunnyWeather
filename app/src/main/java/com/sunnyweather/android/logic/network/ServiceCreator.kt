@@ -17,6 +17,6 @@ object ServiceCreator {
 
     fun <T> create(serviceClass: Class<T>): T = retrofit.create(serviceClass)
 
-    inline fun <reified T> create(): T = create(T::class.java)
+    inline fun <reified T> create() = create(T::class.java)
 
 }
